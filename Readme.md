@@ -20,3 +20,37 @@ This is a template for a Fastify application using Prisma.
 - npx prisma migrate status // 마이그레이션 상태 확인
 - npx prisma migrate deploy // 프로덕션 환경에서 마이그레이션 적용
 - npx prisma validate // 스키마 유효성 검사
+
+### script 설명
+
+```sh # 개발 모드 실행
+npm run dev // 개발 모드 실행
+```
+
+```sh # 빌드 실행
+npm run build // 빌드 실행
+```
+
+```sh # pm2 실행
+npm run start // pm2 실행
+```
+
+```sh # pm2 중지
+npm run stop // pm2 중지
+```
+
+```sh # 서버 배포
+npm run deploy // 서버 배포
+```
+
+```sh # 스키마 생성
+npm run db:generate // 스키마 생성
+```
+
+```sh # 스키마 저장
+npm run db:push // 스키마 저장
+```
+
+```sh # 스키마 확인
+npm run db:studio // 스키마 확인
+```
