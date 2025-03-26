@@ -4,13 +4,13 @@ This is a template for a Fastify application using Prisma.
 
 ### Getting Started
 
-1. npx prisma init
+0. npx prisma init // 처음에 되어있어 안해도 됨
 
-2. schema.prisma 에 스키마 작성
+1. schema.prisma 에 스키마 작성
 
-3. .env 파일에 DATABASE_URL 작성
+2. .env 파일에 DATABASE_URL 작성
 
-4. 선택해서 명령어 사용
+3. 선택해서 명령어 사용 (보통 스키마 생성 및 가져온 후 클라이언트 생성)
 
 - npx prisma db pull // 기존 데이터베이스 스키마 가져오기
 - npx prisma migrate dev --name init // 스키마대로 새 데이터베이스 생성 및 변경
