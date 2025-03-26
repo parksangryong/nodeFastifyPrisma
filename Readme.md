@@ -43,12 +43,16 @@ npm run stop // pm2 중지
 npm run deploy // 서버 배포
 ```
 
-```sh # 스키마 생성
-npm run db:generate // 스키마 생성
+```sh # 프리즈마 클라이언트 스키마 생성
+npm run db:generate // 프리즈마 클라이언트 스키마 생성
 ```
 
-```sh # 스키마 저장
-npm run db:push // 스키마 저장
+```sh # DB의 스키마 가져오기
+npm run db:pull // DB의 스키마 가져오기
+```
+
+```sh # DB에 스키마 저장
+npm run db:push // DB에 스키마 저장
 ```
 
 ```sh # 스키마 확인
