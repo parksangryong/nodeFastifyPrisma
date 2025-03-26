@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model users {
+  id        Int        @id @default(autoincrement())
+  name      String     @db.VarChar(255)
+  age       Int
+  email     String     @unique(map: "users_email_unique") @db.VarChar(255)
+  password  String     @default("1234") @db.VarChar(255)
+  createdAt DateTime?  @default(dbgenerated("(now())")) @db.Timestamp(0)
+  updatedAt DateTime?  @default(dbgenerated("(now())")) @updatedAt @db.Timestamp(0)
+  boards    boards[]
+  comments  comments[]
+  tokens    tokens?
+  uploads   uploads[]
+}
+
+model tokens {
+  id           Int       @id @default(autoincrement())
+  userId       Int       @unique(map: "tokens_userId_unique")
+  accessToken  String    @db.VarChar(255)
+  refreshToken String    @db.VarChar(255)
+  expiresAt    DateTime  @db.Timestamp(0)
+  createdAt    DateTime? @default(dbgenerated("(now())")) @db.Timestamp(0)
+  updatedAt    DateTime? @default(dbgenerated("(now())")) @updatedAt @db.Timestamp(0)
+  user         users     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tokens_userId_users_id_fk")
+}
+
+model uploads {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  fileUrl   String    @db.VarChar(255)
+  createdAt DateTime? @default(dbgenerated("(now())")) @db.Timestamp(0)
+  updatedAt DateTime? @default(dbgenerated("(now())")) @updatedAt @db.Timestamp(0)
+  user      users     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "uploads_userId_users_id_fk")
+
+  @@index([userId], map: "uploads_userId_users_id_fk")
+}
+
+model boards {
+  id        Int        @id @default(autoincrement())
+  userId    Int
+  title     String     @db.VarChar(255)
+  content   String     @db.Text
+  createdAt DateTime?  @default(dbgenerated("(now())")) @db.Timestamp(0)
+  updatedAt DateTime?  @default(dbgenerated("(now())")) @db.Timestamp(0)
+  users     users      @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "boards_userId_users_id_fk")
+  comments  comments[]
+
+  @@index([userId], map: "boards_userId_users_id_fk")
+}
+
+model comments {
+  id        Int       @id @default(autoincrement())
+  boardId   Int
+  userId    Int
+  content   String    @db.Text
+  createdAt DateTime? @default(dbgenerated("(now())")) @db.Timestamp(0)
+  updatedAt DateTime? @default(dbgenerated("(now())")) @db.Timestamp(0)
+  boards    boards    @relation(fields: [boardId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "comments_boardId_boards_id_fk")
+  users     users     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "comments_userId_users_id_fk")
+
+  @@index([boardId], map: "comments_boardId_boards_id_fk")
+  @@index([userId], map: "comments_userId_users_id_fk")
+}
