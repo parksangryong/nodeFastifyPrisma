@@ -56,8 +56,11 @@ const start = async () => {
   try {
     await testConnection(); // Prisma DB 연결 테스트
     const PORT = process.env.PORT || 3000;
-    await app.listen({ port: Number(PORT) });
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    await app.listen({
+      port: Number(PORT),
+      host: "0.0.0.0", // 모든 네트워크 인터페이스에서 리스닝
+    });
+    console.log(`🚀 Server running on port ${PORT}`);
   } catch (err) {
     app.log.error(err);
     process.exit(1);

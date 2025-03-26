@@ -1,7 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { PrismaClient } from "@prisma/client";
 import { getUsers, createUser } from "../controllers/users";
-const prisma = new PrismaClient();
 
 export default async function userRoutes(server: FastifyInstance) {
   server.get("/", getUsers);

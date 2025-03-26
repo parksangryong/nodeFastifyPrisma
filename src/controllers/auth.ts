@@ -15,7 +15,7 @@ export const register = async (
     data: { password, name, email, age },
   });
 
-  const generatedTokens = generateTokens(name, user.id.toString());
+  const generatedTokens = generateTokens(name, user.id);
 
   await prisma.tokens.upsert({
     where: { userId: user.id },
@@ -46,7 +46,7 @@ export const login = async (email: string, password: string) => {
     throw new Error("User not found");
   }
 
-  const generatedTokens = generateTokens(user.name, user.id.toString());
+  const generatedTokens = generateTokens(user.name, user.id);
 
   await prisma.tokens.upsert({
     where: { userId: user.id },
@@ -103,10 +103,7 @@ export const refreshTokens = async (
       throw new Error("Invalid refresh token");
     }
 
-    const newAccessToken = generateTokens(
-      username,
-      userId.toString()
-    ).accessToken;
+    const newAccessToken = generateTokens(username, userId).accessToken;
 
     await prisma.tokens.update({
       where: { userId },

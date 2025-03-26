@@ -4,6 +4,11 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+interface JwtPayload {
+  userId: number;
+  username: string;
+}
+
 export const authenticateToken = async (
   request: FastifyRequest,
   reply: FastifyReply
@@ -18,7 +23,9 @@ export const authenticateToken = async (
   }
 
   try {
-    const decoded = verifyAccessToken(accessToken);
+    const decoded = verifyAccessToken(accessToken) as JwtPayload;
+
+    console.log(decoded);
 
     if (!decoded) {
       return reply.status(401).send({
@@ -27,16 +34,9 @@ export const authenticateToken = async (
       });
     }
 
-    if (typeof decoded === "string") {
-      return reply.status(401).send({
-        code: "JWT-001",
-        message: "토큰이 유효하지 않습니다.",
-      });
-    }
-
     const storedToken = await prisma.tokens.findUnique({
       where: {
-        userId: Number(decoded.userId),
+        userId: decoded.userId,
       },
     });
 

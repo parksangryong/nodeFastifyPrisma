@@ -4,13 +4,6 @@ import * as fsSync from "fs"; // createWriteStream용
 import * as path from "path";
 import { pipeline } from "stream/promises";
 
-interface MultipartFile {
-  filename: string;
-  encoding: string;
-  mimetype: string;
-  file: NodeJS.ReadableStream;
-}
-
 export const uploadFile = async (
   request: FastifyRequest,
   reply: FastifyReply
