@@ -44,13 +44,17 @@ export const uploadFile = async (
     // 파일 정보 로깅
     console.log("파일명:", filename);
     console.log("파일 타입:", mimetype);
+    console.log("파일 크기:", buffer.length);
+
+    // 파일명에서 위험한 문자 제거
+    const sanitizedFileName = filename.replace(/[^a-zA-Z0-9._-]/g, "");
 
     // uploads 폴더 생성 (없는 경우)
     const uploadsDir = "uploads";
     await fs.mkdir(uploadsDir, { recursive: true });
 
     // uploads 폴더에 파일 저장
-    const uploadPath = path.join(uploadsDir, filename);
+    const uploadPath = path.join(uploadsDir, sanitizedFileName);
 
     // 이미지 파일인 경우 압축 처리
     if (mimetype.startsWith("image/")) {
