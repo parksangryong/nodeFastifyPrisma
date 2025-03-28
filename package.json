@@ -14,7 +14,7 @@
     "list": "pm2 list",
     "logs": "pm2 logs fastifyTemplate",
     "deploy": "npm run build && npm run start",
-    "db:generate": "prisma generate",
+    "db:generate": "npx prisma generate",
     "db:pull": "npx prisma db pull",
     "db:push": "npx prisma migrate",
     "db:studio": "npx prisma studio"

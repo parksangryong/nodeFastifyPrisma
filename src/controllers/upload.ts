@@ -26,6 +26,25 @@ export const uploadFile = async (
     const { filename, mimetype, file } = data;
     const userId = request.body.userId;
 
+    // 허용된 이미지 타입 정의
+    const ALLOWED_IMAGE_TYPES = [
+      "image/jpeg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+      "image/jpg",
+      "image/heic",
+      "image/heif",
+      "image/bmp",
+      "image/ico",
+    ];
+
+    if (!ALLOWED_IMAGE_TYPES.includes(mimetype)) {
+      return reply.code(400).send({
+        message: "지원되지 않는 이미지 형식입니다",
+      });
+    }
+
     // 파일 크기 제한 (10MB)
     const MAX_FILE_SIZE = 10 * 1024 * 1024;
     const chunks: Buffer[] = [];
@@ -76,6 +95,9 @@ export const uploadFile = async (
       data: {
         userId: parseInt(userId),
         fileUrl: uploadPath,
+        fileName: sanitizedFileName,
+        fileType: mimetype,
+        fileSize: buffer.length,
       },
     });
 

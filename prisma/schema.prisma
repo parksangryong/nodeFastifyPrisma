@@ -36,6 +36,9 @@ model uploads {
   id        Int       @id @default(autoincrement())
   userId    Int
   fileUrl   String    @db.VarChar(255)
+  fileName  String    @db.VarChar(255)
+  fileType  String    @db.VarChar(255)
+  fileSize  Int
   createdAt DateTime? @default(dbgenerated("(now())")) @db.Timestamp(0)
   updatedAt DateTime? @default(dbgenerated("(now())")) @updatedAt @db.Timestamp(0)
   user      users     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "uploads_userId_users_id_fk")
