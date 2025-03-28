@@ -1,11 +1,17 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { promises as fs } from "fs";
-import * as fsSync from "fs"; // createWriteStream용
 import * as path from "path";
-import { pipeline } from "stream/promises";
+import { PrismaClient } from "@prisma/client";
+import sharp from "sharp";
+
+const prisma = new PrismaClient();
 
 export const uploadFile = async (
-  request: FastifyRequest,
+  request: FastifyRequest<{
+    Body: {
+      userId: string;
+    };
+  }>,
   reply: FastifyReply
 ) => {
   try {
@@ -14,11 +20,26 @@ export const uploadFile = async (
     if (!data) {
       return reply.code(400).send({
         message: "파일이 없거나 올바른 형식이 아닙니다",
-        received: "no file field",
       });
     }
 
     const { filename, mimetype, file } = data;
+    const userId = request.body.userId;
+
+    // 파일 크기 제한 (10MB)
+    const MAX_FILE_SIZE = 10 * 1024 * 1024;
+    const chunks: Buffer[] = [];
+
+    for await (const chunk of file) {
+      chunks.push(chunk);
+    }
+    const buffer = Buffer.concat(chunks);
+
+    if (buffer.length > MAX_FILE_SIZE) {
+      return reply.code(400).send({
+        message: "파일 크기가 10MB를 초과합니다",
+      });
+    }
 
     // 파일 정보 로깅
     console.log("파일명:", filename);
@@ -31,8 +52,28 @@ export const uploadFile = async (
     // uploads 폴더에 파일 저장
     const uploadPath = path.join(uploadsDir, filename);
 
-    // 스트림을 사용하여 파일 저장
-    await pipeline(file, fsSync.createWriteStream(uploadPath));
+    // 이미지 파일인 경우 압축 처리
+    if (mimetype.startsWith("image/")) {
+      const compressedImage = await sharp(buffer)
+        .resize(1200, 1200, {
+          fit: "inside",
+          withoutEnlargement: true,
+        })
+        .jpeg({ quality: 80 })
+        .toBuffer();
+
+      await fs.writeFile(uploadPath, compressedImage);
+    } else {
+      await fs.writeFile(uploadPath, buffer);
+    }
+
+    // 파일 정보를 데이터베이스에 저장
+    await prisma.uploads.create({
+      data: {
+        userId: parseInt(userId),
+        fileUrl: uploadPath,
+      },
+    });
 
     return reply.send({
       message: "파일 업로드 성공",
