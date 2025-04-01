@@ -1,6 +1,6 @@
 import { FastifyReply } from "fastify";
 import { PrismaClient } from "@prisma/client";
-import { generateTokens } from "../utils/jwt";
+import { generateTokens } from "../../utils/jwt";
 import { jwtDecode } from "jwt-decode";
 
 const prisma = new PrismaClient();
@@ -77,10 +77,7 @@ export const logout = async (accessToken: string) => {
   return { message: "로그아웃 성공" };
 };
 
-export const refreshTokens = async (
-  refreshToken: string,
-  reply: FastifyReply
-) => {
+export const refreshTokens = async (refreshToken: string) => {
   try {
     const decoded = jwtDecode(refreshToken);
     const { userId, username, exp } = decoded as {
@@ -90,7 +87,6 @@ export const refreshTokens = async (
     };
 
     if (exp * 1000 < Date.now()) {
-      console.log("리프레시 토큰 만료");
       throw new Error("Refresh token expired");
     }
 
@@ -99,7 +95,6 @@ export const refreshTokens = async (
     });
 
     if (!storedToken || storedToken.refreshToken !== refreshToken) {
-      console.log("리프레시 토큰 유효하지 않음");
       throw new Error("Invalid refresh token");
     }
 
@@ -112,14 +107,11 @@ export const refreshTokens = async (
       },
     });
 
-    return reply.send({
+    return {
       accessToken: newAccessToken,
       refreshToken: refreshToken,
-    });
+    };
   } catch (error) {
-    return reply.status(401).send({
-      message: "유효하지 않은 리프레시 토큰입니다.",
-      code: "JWT-002",
-    });
+    throw error; // 에러를 컨트롤러로 전달
   }
 };

@@ -9,9 +9,9 @@ import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
 // Routes
-import userRoutes from "./routes/user.route";
-import authRoutes from "./routes/auth.route";
-import filesRoutes from "./routes/files.route";
+import userRoutes from "./routes/user/user.controller";
+import authRoutes from "./routes/auth/auth.controller";
+import filesRoutes from "./routes/file/file.controller";
 
 // Middleware
 import { errorHandler } from "./middleware/error.middleware";
@@ -50,7 +50,7 @@ app.register(fastifyRateLimit, {
 app.register(authRoutes, { prefix: "/auth" });
 app.register(async function authenticatedRoutes(fastify) {
   // 인증이 필요한 라우트들에 미들웨어 적용
-  fastify.addHook("preHandler", authenticateToken);
+  // fastify.addHook("preHandler", authenticateToken);
 
   fastify.register(userRoutes, { prefix: "/users" });
   fastify.register(filesRoutes, { prefix: "/files" });
