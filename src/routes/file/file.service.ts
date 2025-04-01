@@ -18,21 +18,21 @@ const ALLOWED_IMAGE_TYPES = [
   "image/ico",
 ];
 
-export const uploadFile = async (
-  request: FastifyRequest<{
-    Body: {
-      userId: string;
-    };
-  }>
-) => {
+export const uploadFile = async (request: FastifyRequest) => {
   const data = await request.file();
 
   if (!data) {
     throw new Error("파일이 없거나 올바른 형식이 아닙니다");
   }
 
+  console.log("FormData fields:", data.fields);
+
   const { filename, mimetype, file } = data;
-  const userId = request.body.userId;
+  const userId = String(data.fields?.userId || "0");
+
+  if (!userId || isNaN(parseInt(userId))) {
+    throw new Error("유효한 userId가 필요합니다");
+  }
 
   if (!ALLOWED_IMAGE_TYPES.includes(mimetype)) {
     throw new Error("지원되지 않는 이미지 형식입니다");

@@ -1,12 +1,5 @@
 // 업로드 스키마
 export const uploadSchema = {
-  body: {
-    type: "object",
-    required: ["userId"],
-    properties: {
-      userId: { type: "string" },
-    },
-  },
   response: {
     201: {
       type: "object",
@@ -14,6 +7,7 @@ export const uploadSchema = {
         message: { type: "string" },
         fileName: { type: "string" },
         path: { type: "string" },
+        userId: { type: "number" },
       },
     },
     400: {
