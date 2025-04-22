@@ -51,7 +51,7 @@ app.register(fastifyRateLimit, {
 app.register(authRoutes, { prefix: "/auth" });
 app.register(async function authenticatedRoutes(fastify) {
   // 인증이 필요한 라우트들에 미들웨어 적용
-  fastify.addHook("preHandler", authenticateToken);
+  // fastify.addHook("preHandler", authenticateToken);
 
   // 인증이 필요한 라우트들
   fastify.register(userRoutes, { prefix: "/users" });

@@ -24,7 +24,6 @@ export const createUserSchema = {
   },
   response: {
     201: {
-      // 200 대신 201 사용 (생성 성공)
       type: "object",
       properties: {
         message: { type: "string" },
