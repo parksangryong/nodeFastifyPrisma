@@ -31,27 +31,29 @@ const app = Fastify({
 errorHandler(app);
 
 // 미들웨어 등록
-app.register(multipart); // 파일 업로드 지원
+app.register(multipart); // 파일 업로드 지원 미들웨어
 app.register(fastifyStatic, {
   root: join(__dirname, "../uploads"),
   prefix: "/uploads/", // URL 접두사
-});
+}); // 정적 파일 서빙 미들웨어
 app.register(fastifyCors, {
   origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   allowedHeaders: ["Authorization", "Content-Type"],
-}); // CORS 활성화
+}); // CORS 활성화 미들웨어
 app.register(fastifyRateLimit, {
   max: 100,
   timeWindow: "1 minute",
-}); // 요청 제한
+}); // 요청 제한 미들웨어
 
 // 라우터 등록
+// 인증이 필요없는 라우트
 app.register(authRoutes, { prefix: "/auth" });
 app.register(async function authenticatedRoutes(fastify) {
   // 인증이 필요한 라우트들에 미들웨어 적용
   fastify.addHook("preHandler", authenticateToken);
 
+  // 인증이 필요한 라우트들
   fastify.register(userRoutes, { prefix: "/users" });
   fastify.register(filesRoutes, { prefix: "/files" });
 });
