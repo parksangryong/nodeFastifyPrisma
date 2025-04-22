@@ -37,11 +37,11 @@ export const errorHandler = (fastify: FastifyInstance) => {
         break;
       case "JWT-001":
         statusCode = 401;
-        message = "토큰이 존재하지 않습니다";
+        message = "액세스 토큰이 만료되었습니다";
         break;
       case "JWT-002":
         statusCode = 401;
-        message = "토큰이 만료되었습니다";
+        message = "리프레시 토큰이 만료되었습니다";
         break;
       case "JWT-003":
         statusCode = 401;
