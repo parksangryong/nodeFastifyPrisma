@@ -35,8 +35,26 @@ export const errorHandler = (fastify: FastifyInstance) => {
         statusCode = 409;
         message = "이미 존재하는 이메일입니다";
         break;
+      case "JWT-001":
+        statusCode = 401;
+        message = "토큰이 존재하지 않습니다";
+        break;
+      case "JWT-002":
+        statusCode = 401;
+        message = "토큰이 만료되었습니다";
+        break;
+      case "JWT-003":
+        statusCode = 401;
+        message = "인증 토큰이 필요합니다";
+        break;
+      case "FILE-001":
+        statusCode = 400;
+        message = "파일 업로드 실패";
+        break;
+      case "FILE-002":
+        statusCode = 400;
+        message = "파일 다운로드 실패";
     }
-
     return reply.status(statusCode).send({
       message,
       code: err.message,

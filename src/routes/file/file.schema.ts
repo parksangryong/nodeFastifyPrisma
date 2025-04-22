@@ -10,12 +10,6 @@ export const uploadSchema = {
         userId: { type: "number" },
       },
     },
-    400: {
-      type: "object",
-      properties: {
-        message: { type: "string" },
-      },
-    },
   },
 };
 
@@ -33,12 +27,6 @@ export const downloadSchema = {
       type: "object",
       properties: {
         url: { type: "string" },
-      },
-    },
-    404: {
-      type: "object",
-      properties: {
-        message: { type: "string" },
       },
     },
   },

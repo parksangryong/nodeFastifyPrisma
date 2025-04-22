@@ -9,8 +9,12 @@ export default async function filesRoutes(server: FastifyInstance) {
       request: FastifyRequest<{ Body: { userId: string } }>,
       reply
     ) => {
-      const result = await uploadFile(request);
-      return reply.code(201).send(result);
+      try {
+        const result = await uploadFile(request);
+        return reply.code(201).send(result);
+      } catch (error) {
+        throw new Error("FILE-001");
+      }
     },
   });
 
@@ -20,8 +24,12 @@ export default async function filesRoutes(server: FastifyInstance) {
       request: FastifyRequest<{ Params: { id: string } }>,
       reply
     ) => {
-      const result = await downloadFile(request);
-      return reply.code(200).send(result);
+      try {
+        const result = await downloadFile(request);
+        return reply.code(200).send(result);
+      } catch (error) {
+        throw new Error("FILE-002");
+      }
     },
   });
 }

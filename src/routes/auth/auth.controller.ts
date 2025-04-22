@@ -57,10 +57,7 @@ export default async function authRoutes(server: FastifyInstance) {
       const accessToken = authHeader?.split(" ")[1];
 
       if (!accessToken) {
-        return reply.status(401).send({
-          code: "JWT-002",
-          message: "토큰이 존재하지 않습니다.",
-        });
+        throw new Error("JWT-002");
       }
       await logout(accessToken);
 
@@ -71,23 +68,17 @@ export default async function authRoutes(server: FastifyInstance) {
   server.post<{ Body: RefreshBody }>("/refresh", {
     schema: refreshSchema,
     handler: async (request, reply) => {
+      const { refreshToken } = request.body;
+
+      if (!refreshToken) {
+        throw new Error("JWT-002");
+      }
+
       try {
-        const { refreshToken } = request.body;
-
-        if (!refreshToken) {
-          return reply.status(401).send({
-            code: "JWT-002",
-            message: "리프레시 토큰이 필요합니다.",
-          });
-        }
-
         const tokens = await refreshTokens(refreshToken);
         return reply.code(201).send(tokens);
       } catch (error) {
-        return reply.status(401).send({
-          message: "유효하지 않은 리프레시 토큰입니다.",
-          code: "JWT-002",
-        });
+        throw new Error("JWT-002");
       }
     },
   });
