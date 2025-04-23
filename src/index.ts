@@ -18,8 +18,7 @@ import { errorHandler } from "./middleware/error.middleware";
 import { authenticateToken } from "./middleware/auth.middleware";
 
 // Prisma
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+import { prisma } from "./lib/prisma";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
