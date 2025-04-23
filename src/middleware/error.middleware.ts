@@ -12,9 +12,9 @@ export const errorHandler = (fastify: FastifyInstance) => {
     console.error(`${error}`);
 
     if (error.validation) {
-      console.log(error.validation.map((v) => v.message));
       return reply.status(410).send({
-        message: "유효성 검사 실패",
+        message: "유효하지 않은 요청입니다",
+        code: "VALIDATION_ERROR",
         issues: error.validation.map((v) => v.message),
       });
     }
