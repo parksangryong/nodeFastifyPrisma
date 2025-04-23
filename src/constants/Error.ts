@@ -61,4 +61,31 @@ export const Errors = {
       message: "유효하지 않은 리프레시 토큰입니다",
     },
   },
+  FILE: {
+    FILE_NOT_FOUND: {
+      code: "FILE-001",
+      status: 404,
+      message: "파일이 존재하지 않습니다",
+    },
+    INVALID_USER_ID: {
+      code: "FILE-002",
+      status: 400,
+      message: "유효하지 않은 유저 ID입니다",
+    },
+    INVALID_IMAGE_TYPE: {
+      code: "FILE-003",
+      status: 400,
+      message: "지원되지 않는 이미지 형식입니다",
+    },
+    FILE_SIZE_EXCEEDED: {
+      code: "FILE-004",
+      status: 400,
+      message: "파일 크기가 10MB를 초과합니다",
+    },
+    UPLOAD_FAILED: {
+      code: "FILE-005",
+      status: 400,
+      message: "파일 업로드에 실패했습니다",
+    },
+  },
 } as const;

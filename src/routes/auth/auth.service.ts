@@ -9,7 +9,7 @@ import { Errors } from "../../constants/Error";
 import { prisma } from "../../lib/prisma";
 
 // types
-import { RegisterBody, LoginBody } from "../../types/auth.types";
+import { RegisterBody, LoginBody } from "../../types/auth.type";
 
 // utils
 import {

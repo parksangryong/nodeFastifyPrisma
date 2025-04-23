@@ -1,53 +1,54 @@
 import { FastifyRequest } from "fastify";
+
+// libraries
 import { promises as fs } from "fs";
 import * as path from "path";
-import { PrismaClient } from "@prisma/client";
 import sharp from "sharp";
 
-const prisma = new PrismaClient();
+// constants
+import { Errors } from "../../constants/Error";
 
-const ALLOWED_IMAGE_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/gif",
-  "image/webp",
-  "image/jpg",
-  "image/heic",
-  "image/heif",
-  "image/bmp",
-  "image/ico",
-];
+// prisma
+import { prisma } from "../../lib/prisma";
 
-export const uploadFile = async (request: FastifyRequest) => {
+// types
+import {
+  DownloadParams,
+  DownloadResponse,
+  UploadResponse,
+} from "../../types/file.type";
+
+// constants
+import { ALLOWED_IMAGE_TYPES, MAX_FILE_SIZE } from "../../constants/common";
+
+export const uploadFile = async (
+  request: FastifyRequest
+): Promise<UploadResponse> => {
   const data = await request.file();
 
   if (!data) {
-    throw new Error("파일이 없거나 올바른 형식이 아닙니다");
+    throw new Error(Errors.FILE.FILE_NOT_FOUND.code);
   }
-
-  console.log("FormData fields:", data.fields);
 
   const { filename, mimetype, file } = data;
   const userId = String(data.fields?.userId || "0");
 
   if (!userId || isNaN(parseInt(userId))) {
-    throw new Error("유효한 userId가 필요합니다");
+    throw new Error(Errors.FILE.INVALID_USER_ID.code);
   }
 
   if (!ALLOWED_IMAGE_TYPES.includes(mimetype)) {
-    throw new Error("지원되지 않는 이미지 형식입니다");
+    throw new Error(Errors.FILE.INVALID_IMAGE_TYPE.code);
   }
 
-  const MAX_FILE_SIZE = 10 * 1024 * 1024;
   const chunks: Buffer[] = [];
-
   for await (const chunk of file) {
     chunks.push(chunk);
   }
   const buffer = Buffer.concat(chunks);
 
   if (buffer.length > MAX_FILE_SIZE) {
-    throw new Error("파일 크기가 10MB를 초과합니다");
+    throw new Error(Errors.FILE.FILE_SIZE_EXCEEDED.code);
   }
 
   const sanitizedFileName = filename.replace(/[^a-zA-Z0-9._-]/g, "");
@@ -83,12 +84,8 @@ export const uploadFile = async (request: FastifyRequest) => {
 };
 
 export const downloadFile = async (
-  request: FastifyRequest<{
-    Params: {
-      id: string;
-    };
-  }>
-) => {
+  request: FastifyRequest<{ Params: DownloadParams }>
+): Promise<DownloadResponse> => {
   const { id } = request.params;
 
   const file = await prisma.uploads.findUnique({
@@ -98,14 +95,10 @@ export const downloadFile = async (
   });
 
   if (!file) {
-    throw new Error("파일을 찾을 수 없습니다");
+    throw new Error(Errors.FILE.FILE_NOT_FOUND.code);
   }
 
-  try {
-    await fs.access(file.fileUrl);
-  } catch {
-    throw new Error("파일이 서버에 존재하지 않습니다");
-  }
+  await fs.access(file.fileUrl);
 
   return { url: file.fileUrl };
 };

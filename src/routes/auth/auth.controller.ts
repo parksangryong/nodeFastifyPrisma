@@ -12,7 +12,7 @@ import {
 } from "./auth.schema";
 
 // types
-import { LoginBody, RegisterBody, RefreshBody } from "../../types/auth.types";
+import { LoginBody, RegisterBody, RefreshBody } from "../../types/auth.type";
 
 // constants
 import { Errors } from "../../constants/Error";
