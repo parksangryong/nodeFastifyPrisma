@@ -9,7 +9,7 @@ import { Errors } from "../../constants/error";
 import { prisma } from "../../lib/prisma";
 
 // types
-import { RegisterBody, LoginBody } from "../../types/auth.type";
+import { RegisterBody, LoginBody, TokenResponse } from "../../types/auth.type";
 
 // utils
 import {
@@ -18,7 +18,7 @@ import {
   comparePassword,
 } from "../../utils/auth.util";
 
-export const register = async (body: RegisterBody) => {
+export const register = async (body: RegisterBody): Promise<TokenResponse> => {
   const existingUser = await prisma.users.findUnique({
     where: { email: body.email },
   });
@@ -43,7 +43,7 @@ export const register = async (body: RegisterBody) => {
   return generatedTokens;
 };
 
-export const login = async (body: LoginBody) => {
+export const login = async (body: LoginBody): Promise<TokenResponse> => {
   const user = await prisma.users.findFirst({
     where: {
       email: body.email,
@@ -63,7 +63,9 @@ export const login = async (body: LoginBody) => {
   return generatedTokens;
 };
 
-export const logout = async (accessToken: string) => {
+export const logout = async (
+  accessToken: string
+): Promise<{ message: string }> => {
   const decoded = jwtDecode(accessToken);
   const { userId } = decoded as { userId: number };
 
@@ -74,7 +76,9 @@ export const logout = async (accessToken: string) => {
   return { message: "로그아웃 성공" };
 };
 
-export const refreshTokens = async (refreshToken: string) => {
+export const refreshTokens = async (
+  refreshToken: string
+): Promise<TokenResponse> => {
   const decoded = jwtDecode(refreshToken);
   const { userId, username, exp } = decoded as {
     userId: number;
