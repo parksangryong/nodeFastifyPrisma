@@ -1,5 +1,9 @@
 import { FastifyInstance } from "fastify";
+
+// service
 import { register, login, logout, refreshTokens } from "./auth.service";
+
+// schema
 import {
   loginSchema,
   registerSchema,
@@ -7,29 +11,19 @@ import {
   refreshSchema,
 } from "./auth.schema";
 
-interface LoginBody {
-  email: string;
-  password: string;
-}
+// types
+import { LoginBody, RegisterBody, RefreshBody } from "../../types/auth.types";
 
-interface RegisterBody {
-  password: string;
-  name: string;
-  email: string;
-  age: number;
-}
-
-interface RefreshBody {
-  refreshToken: string;
-}
+// constants
+import { Errors } from "../../constants/Error";
 
 export default async function authRoutes(server: FastifyInstance) {
   server.post<{ Body: LoginBody }>("/login", {
     schema: loginSchema,
     handler: async (request, reply) => {
       const { email, password } = request.body;
-      const tokens = await login(email, password);
 
+      const tokens = await login({ email, password });
       reply.code(201).send({
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
@@ -41,7 +35,8 @@ export default async function authRoutes(server: FastifyInstance) {
     schema: registerSchema,
     handler: async (request, reply) => {
       const { password, name, email, age } = request.body;
-      const tokens = await register(password, name, email, age);
+
+      const tokens = await register({ password, name, email, age });
 
       reply.code(201).send({
         accessToken: tokens.accessToken,
@@ -57,10 +52,10 @@ export default async function authRoutes(server: FastifyInstance) {
       const accessToken = authHeader?.split(" ")[1];
 
       if (!accessToken) {
-        throw new Error("JWT-002");
+        throw new Error(Errors.JWT.TOKEN_REQUIRED.code);
       }
-      await logout(accessToken);
 
+      await logout(accessToken);
       reply.code(200).send({ message: "로그아웃에 성공했습니다." });
     },
   });
@@ -71,15 +66,11 @@ export default async function authRoutes(server: FastifyInstance) {
       const { refreshToken } = request.body;
 
       if (!refreshToken) {
-        throw new Error("JWT-002");
+        throw new Error(Errors.JWT.REFRESH_EXPIRED.code);
       }
 
-      try {
-        const tokens = await refreshTokens(refreshToken);
-        return reply.code(201).send(tokens);
-      } catch (error) {
-        throw new Error("JWT-002");
-      }
+      const tokens = await refreshTokens(refreshToken);
+      return reply.code(201).send(tokens);
     },
   });
 }

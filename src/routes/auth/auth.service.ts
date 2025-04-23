@@ -1,68 +1,65 @@
-import { FastifyReply } from "fastify";
-import { PrismaClient } from "@prisma/client";
+// utils
 import { generateTokens } from "../../utils/jwt";
 import { jwtDecode } from "jwt-decode";
 
-const prisma = new PrismaClient();
+// constants
+import { Errors } from "../../constants/Error";
 
-export const register = async (
-  password: string,
-  name: string,
-  email: string,
-  age: number
-) => {
+// prisma
+import { prisma } from "../../lib/prisma";
+
+// types
+import { RegisterBody, LoginBody } from "../../types/auth.types";
+
+// utils
+import {
+  saveTokens,
+  hashPassword,
+  comparePassword,
+} from "../../utils/auth.util";
+
+export const register = async (body: RegisterBody) => {
+  const existingUser = await prisma.users.findUnique({
+    where: { email: body.email },
+  });
+
+  if (existingUser) {
+    throw new Error(Errors.AUTH.USER_EXISTS.code);
+  }
+
+  const hashedPassword = await hashPassword(body.password);
+
   const user = await prisma.users.create({
-    data: { password, name, email, age },
-  });
-
-  const generatedTokens = generateTokens(name, user.id);
-
-  await prisma.tokens.upsert({
-    where: { userId: user.id },
-    create: {
-      userId: user.id,
-      accessToken: generatedTokens.accessToken,
-      refreshToken: generatedTokens.refreshToken,
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-    },
-    update: {
-      accessToken: generatedTokens.accessToken,
-      refreshToken: generatedTokens.refreshToken,
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    data: {
+      password: hashedPassword,
+      name: body.name,
+      email: body.email,
+      age: body.age,
     },
   });
+
+  const generatedTokens = await saveTokens(user.id, user.name);
 
   return generatedTokens;
 };
 
-export const login = async (email: string, password: string) => {
+export const login = async (body: LoginBody) => {
   const user = await prisma.users.findFirst({
     where: {
-      AND: [{ email }, { password }],
+      email: body.email,
     },
   });
 
   if (!user) {
-    throw new Error("User not found");
+    throw new Error(Errors.AUTH.USER_NOT_FOUND.code);
   }
 
-  const generatedTokens = generateTokens(user.name, user.id);
+  const isPasswordValid = await comparePassword(body.password, user.password);
+  if (!isPasswordValid) {
+    throw new Error(Errors.AUTH.PASSWORD_NOT_MATCH.code);
+  }
 
-  await prisma.tokens.upsert({
-    where: { userId: user.id },
-    create: {
-      userId: user.id,
-      accessToken: generatedTokens.accessToken,
-      refreshToken: generatedTokens.refreshToken,
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-    },
-    update: {
-      accessToken: generatedTokens.accessToken,
-      refreshToken: generatedTokens.refreshToken,
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-    },
-  });
-
+  const generatedTokens = await saveTokens(user.id, user.name);
   return generatedTokens;
 };
 
@@ -78,40 +75,36 @@ export const logout = async (accessToken: string) => {
 };
 
 export const refreshTokens = async (refreshToken: string) => {
-  try {
-    const decoded = jwtDecode(refreshToken);
-    const { userId, username, exp } = decoded as {
-      userId: number;
-      username: string;
-      exp: number;
-    };
+  const decoded = jwtDecode(refreshToken);
+  const { userId, username, exp } = decoded as {
+    userId: number;
+    username: string;
+    exp: number;
+  };
 
-    if (exp * 1000 < Date.now()) {
-      throw new Error("Refresh token expired");
-    }
-
-    const storedToken = await prisma.tokens.findUnique({
-      where: { userId },
-    });
-
-    if (!storedToken || storedToken.refreshToken !== refreshToken) {
-      throw new Error("Invalid refresh token");
-    }
-
-    const newAccessToken = generateTokens(username, userId).accessToken;
-
-    await prisma.tokens.update({
-      where: { userId },
-      data: {
-        accessToken: newAccessToken,
-      },
-    });
-
-    return {
-      accessToken: newAccessToken,
-      refreshToken: refreshToken,
-    };
-  } catch (error) {
-    throw error; // 에러를 컨트롤러로 전달
+  if (exp * 1000 < Date.now()) {
+    throw new Error(Errors.JWT.REFRESH_EXPIRED.code);
   }
+
+  const storedToken = await prisma.tokens.findUnique({
+    where: { userId },
+  });
+
+  if (!storedToken || storedToken.refreshToken !== refreshToken) {
+    throw new Error(Errors.JWT.INVALID_REFRESH_TOKEN.code);
+  }
+
+  const newAccessToken = generateTokens(username, userId).accessToken;
+
+  await prisma.tokens.update({
+    where: { userId },
+    data: {
+      accessToken: newAccessToken,
+    },
+  });
+
+  return {
+    accessToken: newAccessToken,
+    refreshToken: refreshToken,
+  };
 };

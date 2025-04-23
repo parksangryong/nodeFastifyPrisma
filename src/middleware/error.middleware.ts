@@ -1,4 +1,5 @@
 import { FastifyInstance, FastifyError, FastifyReply } from "fastify";
+import { Errors } from "../constants/Error";
 
 interface CustomError extends Error {
   code?: string;
@@ -10,10 +11,6 @@ export const errorHandler = (fastify: FastifyInstance) => {
   fastify.setErrorHandler((error: FastifyError, _, reply: FastifyReply) => {
     console.error(`${error}`);
 
-    const err = error as CustomError;
-    let statusCode = 500;
-    let message = "서버 에러가 발생했습니다";
-
     if (error.validation) {
       return reply.status(400).send({
         message: "유효성 검사 실패",
@@ -21,43 +18,24 @@ export const errorHandler = (fastify: FastifyInstance) => {
       });
     }
 
-    // 에러 코드에 따른 상태 코드 설정
-    switch (err.message) {
-      case "USER-001":
-        statusCode = 400;
-        message = "유저 생성 실패";
-        break;
-      case "USER-002":
-        statusCode = 400;
-        message = "유저 조회 실패";
-        break;
-      case "USER-003":
-        statusCode = 409;
-        message = "이미 존재하는 이메일입니다";
-        break;
-      case "JWT-001":
-        statusCode = 401;
-        message = "액세스 토큰이 만료되었습니다";
-        break;
-      case "JWT-002":
-        statusCode = 401;
-        message = "리프레시 토큰이 만료되었습니다";
-        break;
-      case "JWT-003":
-        statusCode = 401;
-        message = "인증 토큰이 필요합니다";
-        break;
-      case "FILE-001":
-        statusCode = 400;
-        message = "파일 업로드 실패";
-        break;
-      case "FILE-002":
-        statusCode = 400;
-        message = "파일 다운로드 실패";
+    // 모든 에러 객체를 평탄화하여 검색
+    const errorEntries = Object.values(Errors).flatMap((category) =>
+      Object.values(category)
+    );
+
+    const matchedError = errorEntries.find((err) => err.code === error.message);
+
+    if (matchedError) {
+      return reply.status(matchedError.status).send({
+        message: matchedError.message,
+        code: matchedError.code,
+      });
     }
-    return reply.status(statusCode).send({
-      message,
-      code: err.message,
+
+    // 기본 에러 응답
+    return reply.status(500).send({
+      message: "서버 에러가 발생했습니다",
+      code: "SERVER_ERROR",
     });
   });
 
