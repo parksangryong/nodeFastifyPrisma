@@ -30,11 +30,10 @@ const app = Fastify({
   logger: true, // 기본 로거 설정으로 변경
 });
 
-app.register(swagger);
-
 errorHandler(app);
 
 // 미들웨어 등록
+app.register(swagger); //스웨거 미들웨어
 app.register(multipart); // 파일 업로드 지원 미들웨어
 app.register(fastifyStatic, {
   root: join(__dirname, "../uploads"),
@@ -55,7 +54,7 @@ app.register(fastifyRateLimit, {
 app.register(authRoutes, { prefix: "/auth" });
 app.register(async function authenticatedRoutes(fastify) {
   // 인증이 필요한 라우트들에 미들웨어 적용
-  // fastify.addHook("preHandler", authenticateToken);
+  fastify.addHook("preHandler", authenticateToken);
 
   // 인증이 필요한 라우트들
   fastify.register(userRoutes, { prefix: "/users" });
