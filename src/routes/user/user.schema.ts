@@ -1,5 +1,6 @@
 // 업로드 스키마
 export const getUsersSchema = {
+  tags: ["user"],
   response: {
     200: {
       type: "object",
@@ -12,6 +13,7 @@ export const getUsersSchema = {
 };
 
 export const createUserSchema = {
+  tags: ["user"],
   body: {
     type: "object",
     required: ["email", "name", "age", "password"],

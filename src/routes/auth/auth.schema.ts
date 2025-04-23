@@ -1,5 +1,6 @@
 // 로그인 스키마
 export const loginSchema = {
+  tags: ["auth"],
   body: {
     type: "object",
     required: ["email", "password"],
@@ -28,6 +29,7 @@ export const loginSchema = {
 
 // 회원가입 스키마
 export const registerSchema = {
+  tags: ["auth"],
   body: {
     type: "object",
     required: ["email", "password", "name", "age"],
@@ -65,6 +67,7 @@ export const registerSchema = {
 
 // 로그아웃 스키마
 export const logoutSchema = {
+  tags: ["auth"],
   body: {},
   response: {
     200: {
@@ -85,6 +88,7 @@ export const logoutSchema = {
 
 // 리프레시 토큰 스키마
 export const refreshSchema = {
+  tags: ["auth"],
   body: {
     type: "object",
     required: ["refreshToken"],

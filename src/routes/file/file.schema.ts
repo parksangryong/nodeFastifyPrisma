@@ -1,5 +1,6 @@
 // 업로드 스키마
 export const uploadSchema = {
+  tags: ["file"],
   response: {
     201: {
       type: "object",
@@ -29,6 +30,7 @@ export const uploadSchema = {
 
 // 다운로드 스키마
 export const downloadSchema = {
+  tags: ["file"],
   params: {
     type: "object",
     required: ["id"],

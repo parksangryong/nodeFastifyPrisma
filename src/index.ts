@@ -20,12 +20,17 @@ import { authenticateToken } from "./middleware/auth.middleware";
 // Prisma
 import { prisma } from "./lib/prisma";
 
+// Plugins
+import swagger from "./plugins/swagger";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = Fastify({
   logger: true, // 기본 로거 설정으로 변경
 });
+
+app.register(swagger);
 
 errorHandler(app);
 
@@ -50,7 +55,7 @@ app.register(fastifyRateLimit, {
 app.register(authRoutes, { prefix: "/auth" });
 app.register(async function authenticatedRoutes(fastify) {
   // 인증이 필요한 라우트들에 미들웨어 적용
-  fastify.addHook("preHandler", authenticateToken);
+  // fastify.addHook("preHandler", authenticateToken);
 
   // 인증이 필요한 라우트들
   fastify.register(userRoutes, { prefix: "/users" });

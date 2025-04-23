@@ -51,10 +51,11 @@ export const uploadFile = async (
     throw new Error(Errors.FILE.FILE_SIZE_EXCEEDED.code);
   }
 
-  const sanitizedFileName = filename.replace(/[^a-zA-Z0-9._-]/g, "");
+  const sanitizedFileName = filename.replace(/[^\p{L}\p{N}._-]/gu, "");
+  const timestamp = Date.now();
   const uploadsDir = "uploads";
   await fs.mkdir(uploadsDir, { recursive: true });
-  const uploadPath = path.join(uploadsDir, sanitizedFileName);
+  const uploadPath = path.join(uploadsDir, `${timestamp}-${sanitizedFileName}`);
 
   const compressedImage = await sharp(buffer)
     .resize(1200, 1200, {
