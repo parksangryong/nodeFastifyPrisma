@@ -5,6 +5,8 @@ import { uploadFile, downloadFile } from "./file.service";
 
 // schema
 import { uploadSchema, downloadSchema } from "./file.schema";
+
+// types
 import {
   DownloadParams,
   DownloadResponse,

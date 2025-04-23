@@ -6,7 +6,7 @@ import * as path from "path";
 import sharp from "sharp";
 
 // constants
-import { Errors } from "../../constants/Error";
+import { Errors } from "../../constants/error";
 
 // prisma
 import { prisma } from "../../lib/prisma";

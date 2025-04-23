@@ -3,7 +3,7 @@ import { generateTokens } from "../../utils/jwt";
 import { jwtDecode } from "jwt-decode";
 
 // constants
-import { Errors } from "../../constants/Error";
+import { Errors } from "../../constants/error";
 
 // prisma
 import { prisma } from "../../lib/prisma";

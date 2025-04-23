@@ -1,6 +1,8 @@
-import { PrismaClient } from "@prisma/client";
+// constants
+import { Errors } from "../../constants/error";
 
-const prisma = new PrismaClient();
+// prisma
+import { prisma } from "../../lib/prisma";
 
 export const createUser = async (
   email: string,
@@ -8,6 +10,14 @@ export const createUser = async (
   age: number,
   password: string
 ) => {
+  const existingUser = await prisma.users.findUnique({
+    where: { email },
+  });
+
+  if (existingUser) {
+    throw new Error(Errors.USER.EMAIL_EXISTS.code);
+  }
+
   return await prisma.users.create({
     data: {
       name,

@@ -15,7 +15,7 @@ import {
 import { LoginBody, RegisterBody, RefreshBody } from "../../types/auth.type";
 
 // constants
-import { Errors } from "../../constants/Error";
+import { Errors } from "../../constants/error";
 
 export default async function authRoutes(server: FastifyInstance) {
   server.post<{ Body: LoginBody }>("/login", {

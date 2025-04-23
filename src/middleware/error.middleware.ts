@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyError, FastifyReply } from "fastify";
-import { Errors } from "../constants/Error";
+import { Errors } from "../constants/error";
 
 interface CustomError extends Error {
   code?: string;

@@ -1,8 +1,11 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { verifyAccessToken } from "../utils/jwt";
-import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
+// prisma
+import { prisma } from "../lib/prisma";
+
+// constants
+import { Errors } from "../constants/error";
 
 interface JwtPayload {
   userId: number;
@@ -16,7 +19,7 @@ export const authenticateToken = async (
   const accessToken = request.headers.authorization?.split(" ")[1];
 
   if (!accessToken) {
-    throw new Error("JWT-003");
+    throw new Error(Errors.JWT.TOKEN_REQUIRED.code);
   }
 
   try {
@@ -25,7 +28,7 @@ export const authenticateToken = async (
     console.log(decoded);
 
     if (!decoded) {
-      throw new Error("JWT-001");
+      throw new Error(Errors.JWT.ACCESS_EXPIRED.code);
     }
 
     const storedToken = await prisma.tokens.findUnique({
@@ -35,13 +38,13 @@ export const authenticateToken = async (
     });
 
     if (!storedToken) {
-      throw new Error("JWT-002");
+      throw new Error(Errors.JWT.REFRESH_EXPIRED.code);
     }
 
     if (new Date(storedToken.expiresAt) < new Date()) {
-      throw new Error("JWT-001");
+      throw new Error(Errors.JWT.ACCESS_EXPIRED.code);
     }
   } catch (error) {
-    throw new Error("JWT-001");
+    throw new Error(Errors.JWT.REFRESH_EXPIRED.code);
   }
 };

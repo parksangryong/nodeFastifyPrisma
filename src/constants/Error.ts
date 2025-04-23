@@ -23,16 +23,6 @@ export const Errors = {
     },
   },
   USER: {
-    CREATE_FAILED: {
-      code: "USER-001",
-      status: 400,
-      message: "유저 생성 실패",
-    },
-    READ_FAILED: {
-      code: "USER-002",
-      status: 400,
-      message: "유저 조회 실패",
-    },
     EMAIL_EXISTS: {
       code: "USER-003",
       status: 409,
