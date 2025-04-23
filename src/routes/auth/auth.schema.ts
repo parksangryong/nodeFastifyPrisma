@@ -16,6 +16,13 @@ export const loginSchema = {
         refreshToken: { type: "string" },
       },
     },
+    400: {
+      type: "object",
+      properties: {
+        message: { type: "string" },
+        code: { type: "string" },
+      },
+    },
   },
 };
 
@@ -39,6 +46,20 @@ export const registerSchema = {
         refreshToken: { type: "string" },
       },
     },
+    400: {
+      type: "object",
+      properties: {
+        message: { type: "string" },
+        code: { type: "string" },
+      },
+    },
+    409: {
+      type: "object",
+      properties: {
+        message: { type: "string" },
+        code: { type: "string" },
+      },
+    },
   },
 };
 
@@ -50,6 +71,13 @@ export const logoutSchema = {
       type: "object",
       properties: {
         message: { type: "string" },
+      },
+    },
+    401: {
+      type: "object",
+      properties: {
+        message: { type: "string" },
+        code: { type: "string" },
       },
     },
   },
@@ -70,6 +98,20 @@ export const refreshSchema = {
       properties: {
         accessToken: { type: "string" },
         refreshToken: { type: "string" },
+      },
+    },
+    400: {
+      type: "object",
+      properties: {
+        message: { type: "string" },
+        code: { type: "string" },
+      },
+    },
+    401: {
+      type: "object",
+      properties: {
+        message: { type: "string" },
+        code: { type: "string" },
       },
     },
   },

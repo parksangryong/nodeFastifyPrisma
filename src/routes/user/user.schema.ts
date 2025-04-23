@@ -29,5 +29,12 @@ export const createUserSchema = {
         message: { type: "string" },
       },
     },
+    409: {
+      type: "object",
+      properties: {
+        message: { type: "string" },
+        code: { type: "string" },
+      },
+    },
   },
 };
