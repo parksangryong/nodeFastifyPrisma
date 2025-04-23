@@ -50,6 +50,11 @@ export const Errors = {
       status: 401,
       message: "유효하지 않은 리프레시 토큰입니다",
     },
+    REFRESH_TOKEN_REQUIRED: {
+      code: "JWT-005",
+      status: 401,
+      message: "리프레시 토큰이 필요합니다",
+    },
   },
   FILE: {
     FILE_NOT_FOUND: {
