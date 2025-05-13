@@ -15,7 +15,7 @@ export const createUser = async (
   });
 
   if (existingUser) {
-    throw new Error(Errors.USER.EMAIL_EXISTS.code);
+    throw new Error(Errors.USER.USER_NOT_FOUND.code);
   }
 
   return await prisma.users.create({
