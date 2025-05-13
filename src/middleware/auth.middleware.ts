@@ -12,9 +12,8 @@ import { prisma } from "../lib/prisma.js";
 import { Errors } from "../constants/error.js";
 
 interface JwtPayload {
-  mb_no: number;
-  mb_name: string;
-  phoneToken: string;
+  userId: number;
+  name: string;
 }
 
 export const authenticateToken = async (
@@ -60,7 +59,7 @@ export const authenticateToken = async (
   try {
     await prisma.tokens.findUnique({
       where: {
-        id: decoded.mb_no,
+        userId: decoded.userId,
       },
     });
   } catch (error) {
