@@ -4,14 +4,13 @@ import { prisma } from "../lib/prisma.js";
 import crypto from "crypto";
 
 // 토큰 저장 함수
-const saveTokens = async (mb_no: number, mb_name: string) => {
-  const generatedTokens = generateTokens(mb_name, mb_no);
+const saveTokens = async (userId: number, name: string) => {
+  const generatedTokens = generateTokens(name, userId);
 
   await prisma.tokens.upsert({
-    where: { id: mb_no },
+    where: { userId: userId },
     create: {
-      id: mb_no,
-      userId: mb_no,
+      userId: userId,
       accessToken: generatedTokens.accessToken,
       refreshToken: generatedTokens.refreshToken,
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),

@@ -5,11 +5,11 @@ const ACCESS_TOKEN_SECRET =
 const REFRESH_TOKEN_SECRET =
   process.env.REFRESH_TOKEN_SECRET || "your-refresh-secret";
 
-export const generateTokens = (mb_name: string, mb_no: number) => {
-  const accessToken = jwt.sign({ mb_name, mb_no }, ACCESS_TOKEN_SECRET, {
+export const generateTokens = (name: string, userId: number) => {
+  const accessToken = jwt.sign({ name, userId }, ACCESS_TOKEN_SECRET, {
     expiresIn: "30m",
   });
-  const refreshToken = jwt.sign({ mb_name, mb_no }, REFRESH_TOKEN_SECRET, {
+  const refreshToken = jwt.sign({ name, userId }, REFRESH_TOKEN_SECRET, {
     expiresIn: "14d",
   });
 

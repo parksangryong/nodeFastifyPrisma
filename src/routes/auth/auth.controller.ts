@@ -16,6 +16,7 @@ import { LoginBody, RegisterBody, RefreshBody } from "../../types/auth.type";
 
 // constants
 import { Errors } from "../../constants/error";
+import { getAccessToken } from "../../utils/jwt";
 
 export default async function authRoutes(server: FastifyInstance) {
   server.post<{ Body: LoginBody }>("/login", {
@@ -49,7 +50,14 @@ export default async function authRoutes(server: FastifyInstance) {
     schema: logoutSchema,
     handler: async (request, reply) => {
       const authHeader = request.headers.authorization;
-      const accessToken = authHeader?.split(" ")[1];
+
+      // Bearer 토큰 형식 검증
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        throw new Error(Errors.JWT.TOKEN_REQUIRED.code);
+      }
+
+      // Bearer 제거하고 토큰만 추출
+      const accessToken = getAccessToken(authHeader);
 
       if (!accessToken) {
         throw new Error(Errors.JWT.TOKEN_REQUIRED.code);

@@ -38,9 +38,7 @@ export const register = async (body: RegisterBody): Promise<TokenResponse> => {
     },
   });
 
-  const generatedTokens = await saveTokens(user.id, user.name);
-
-  return generatedTokens;
+  return await saveTokens(user.id, user.name);
 };
 
 export const login = async (body: LoginBody): Promise<TokenResponse> => {
@@ -59,8 +57,7 @@ export const login = async (body: LoginBody): Promise<TokenResponse> => {
     throw new Error(Errors.AUTH.PASSWORD_NOT_MATCH.code);
   }
 
-  const generatedTokens = await saveTokens(user.id, user.name);
-  return generatedTokens;
+  return await saveTokens(user.id, user.name);
 };
 
 export const logout = async (
@@ -80,11 +77,15 @@ export const refreshTokens = async (
   refreshToken: string
 ): Promise<TokenResponse> => {
   const decoded = jwtDecode(refreshToken);
-  const { userId, username, exp } = decoded as {
+  const { userId, name, exp } = decoded as {
     userId: number;
-    username: string;
+    name: string;
     exp: number;
   };
+
+  if (!userId || !name) {
+    throw new Error(Errors.JWT.INVALID_REFRESH_TOKEN.code);
+  }
 
   if (exp * 1000 < Date.now()) {
     throw new Error(Errors.JWT.REFRESH_EXPIRED.code);
@@ -98,7 +99,7 @@ export const refreshTokens = async (
     throw new Error(Errors.JWT.INVALID_REFRESH_TOKEN.code);
   }
 
-  const newAccessToken = generateTokens(username, userId).accessToken;
+  const newAccessToken = generateTokens(name, userId).accessToken;
 
   await prisma.tokens.update({
     where: { userId },
