@@ -34,7 +34,11 @@ errorHandler(app);
 
 // 미들웨어 등록
 app.register(swagger); //스웨거 미들웨어
-app.register(multipart); // 파일 업로드 지원 미들웨어
+app.register(multipart, {
+  limits: {
+    fileSize: 20 * 1024 * 1024, // 20MB
+  },
+}); // 파일 업로드 지원 미들웨어
 app.register(fastifyStatic, {
   root: join(__dirname, "../uploads"),
   prefix: "/uploads/", // URL 접두사
