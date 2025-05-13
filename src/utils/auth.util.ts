@@ -1,16 +1,17 @@
 // utils/token.utils.ts
-import { generateTokens } from "./jwt";
-import { prisma } from "../lib/prisma";
-import bcrypt from "bcrypt";
+import { generateTokens } from "./jwt.js";
+import { prisma } from "../lib/prisma.js";
+import crypto from "crypto";
 
 // 토큰 저장 함수
-const saveTokens = async (userId: number, name: string) => {
-  const generatedTokens = generateTokens(name, userId);
+const saveTokens = async (mb_no: number, mb_name: string) => {
+  const generatedTokens = generateTokens(mb_name, mb_no);
 
   await prisma.tokens.upsert({
-    where: { userId },
+    where: { id: mb_no },
     create: {
-      userId,
+      id: mb_no,
+      userId: mb_no,
       accessToken: generatedTokens.accessToken,
       refreshToken: generatedTokens.refreshToken,
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
@@ -25,16 +26,19 @@ const saveTokens = async (userId: number, name: string) => {
   return generatedTokens;
 };
 
-const hashPassword = async (password: string): Promise<string> => {
-  const salt = await bcrypt.genSalt(10);
-  return await bcrypt.hash(password, salt);
+// 암호화 방법은 알아서 결정(임의)
+const hashPassword = (password: string): string => {
+  const firstSha1 = crypto.createHash("sha1").update(password).digest();
+  const secondSha1 = crypto.createHash("sha1").update(firstSha1).digest("hex");
+  return `*${secondSha1.toUpperCase()}`;
 };
 
-const comparePassword = async (
+const comparePassword = (
   plainPassword: string,
   hashedPassword: string
-): Promise<boolean> => {
-  return await bcrypt.compare(plainPassword, hashedPassword);
+): boolean => {
+  const hashedInput = hashPassword(plainPassword);
+  return hashedInput === hashedPassword;
 };
 
 export { saveTokens, hashPassword, comparePassword };

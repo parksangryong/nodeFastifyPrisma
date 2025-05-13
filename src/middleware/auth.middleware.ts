@@ -1,50 +1,69 @@
-import { FastifyRequest, FastifyReply } from "fastify";
-import { verifyAccessToken } from "../utils/jwt";
+import type { FastifyRequest, FastifyReply } from "fastify";
+import {
+  verifyAccessToken,
+  getAccessToken,
+  verifyRefreshToken,
+} from "../utils/jwt.js";
 
 // prisma
-import { prisma } from "../lib/prisma";
+import { prisma } from "../lib/prisma.js";
 
 // constants
-import { Errors } from "../constants/error";
+import { Errors } from "../constants/error.js";
 
 interface JwtPayload {
-  userId: number;
-  username: string;
+  mb_no: number;
+  mb_name: string;
+  phoneToken: string;
 }
 
 export const authenticateToken = async (
   request: FastifyRequest,
   reply: FastifyReply
 ) => {
-  const accessToken = request.headers.authorization?.split(" ")[1];
+  const authHeader = request.headers.authorization;
 
-  if (!accessToken) {
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
     throw new Error(Errors.JWT.TOKEN_REQUIRED.code);
   }
 
+  const accessToken = getAccessToken(authHeader);
+
+  const decoded = verifyAccessToken(accessToken) as JwtPayload;
+
+  const getTokenData = await prisma.tokens.findFirst({
+    where: {
+      accessToken: accessToken,
+    },
+    select: {
+      refreshToken: true,
+    },
+  });
+
+  if (!getTokenData) {
+    throw new Error(Errors.JWT.INVALID_ACCESS_TOKEN.code);
+  }
+
+  const refreshDecoded = verifyRefreshToken(getTokenData?.refreshToken);
+
+  console.log("ACCESS_TOKEN_SECRET:", decoded);
+  console.log("REFRESH_TOKEN_DECODED:", refreshDecoded);
+
+  if (!decoded && !refreshDecoded) {
+    throw new Error(Errors.JWT.INVALID_ACCESS_TOKEN.code);
+  }
+
+  if (!decoded && refreshDecoded) {
+    throw new Error(Errors.JWT.ACCESS_EXPIRED.code);
+  }
+
   try {
-    const decoded = verifyAccessToken(accessToken) as JwtPayload;
-
-    console.log(decoded);
-
-    if (!decoded) {
-      throw new Error(Errors.JWT.ACCESS_EXPIRED.code);
-    }
-
-    const storedToken = await prisma.tokens.findUnique({
+    await prisma.tokens.findUnique({
       where: {
-        userId: decoded.userId,
+        id: decoded.mb_no,
       },
     });
-
-    if (!storedToken) {
-      throw new Error(Errors.JWT.REFRESH_EXPIRED.code);
-    }
-
-    if (new Date(storedToken.expiresAt) < new Date()) {
-      throw new Error(Errors.JWT.ACCESS_EXPIRED.code);
-    }
   } catch (error) {
-    throw new Error(Errors.JWT.REFRESH_EXPIRED.code);
+    throw new Error(Errors.JWT.DB_ERROR.code);
   }
 };

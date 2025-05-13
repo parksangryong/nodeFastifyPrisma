@@ -1,5 +1,5 @@
-import { FastifyInstance, FastifyError, FastifyReply } from "fastify";
-import { Errors } from "../constants/error";
+import type { FastifyInstance, FastifyError, FastifyReply } from "fastify";
+import { Errors } from "../constants/error.js";
 
 interface CustomError extends Error {
   code?: string;
