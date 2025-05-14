@@ -7,6 +7,7 @@ import { Errors } from "../../constants/error";
 
 // prisma
 import { prisma } from "../../lib/prisma";
+import { redis } from "../../lib/redis";
 
 // types
 import { RegisterBody, LoginBody, TokenResponse } from "../../types/auth.type";
@@ -66,9 +67,11 @@ export const logout = async (
   const decoded = jwtDecode(accessToken);
   const { userId } = decoded as { userId: number };
 
-  await prisma.tokens.delete({
-    where: { userId },
-  });
+  console.log("userId:", userId);
+
+  // Redis에서 토큰 삭제
+  await redis.del(`access_token:${userId}`);
+  await redis.del(`refresh_token:${userId}`);
 
   return { message: "로그아웃 성공" };
 };
@@ -91,21 +94,17 @@ export const refreshTokens = async (
     throw new Error(Errors.JWT.REFRESH_EXPIRED.code);
   }
 
-  const storedToken = await prisma.tokens.findUnique({
-    where: { userId },
-  });
-
-  if (!storedToken || storedToken.refreshToken !== refreshToken) {
+  // Redis에서 저장된 리프레시 토큰 확인
+  const storedRefreshToken = await redis.get(`refresh_token:${userId}`);
+  if (!storedRefreshToken || storedRefreshToken !== refreshToken) {
     throw new Error(Errors.JWT.INVALID_REFRESH_TOKEN.code);
   }
 
   const newAccessToken = generateTokens(name, userId).accessToken;
 
-  await prisma.tokens.update({
-    where: { userId },
-    data: {
-      accessToken: newAccessToken,
-    },
+  // Redis에 새로운 액세스 토큰 저장
+  await redis.set(`access_token:${userId}`, newAccessToken, {
+    EX: 1800, // 30분
   });
 
   return {

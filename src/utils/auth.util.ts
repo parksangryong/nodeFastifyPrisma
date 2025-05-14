@@ -1,25 +1,24 @@
 // utils/token.utils.ts
 import { generateTokens } from "./jwt.js";
-import { prisma } from "../lib/prisma.js";
+import { redis } from "../lib/redis.js";
 import crypto from "crypto";
+
+// constants
+import {
+  ACCESS_TOKEN_EXPIRATION_TIME,
+  REFRESH_TOKEN_EXPIRATION_TIME,
+} from "../constants/common.js";
 
 // 토큰 저장 함수
 const saveTokens = async (userId: number, name: string) => {
   const generatedTokens = generateTokens(name, userId);
 
-  await prisma.tokens.upsert({
-    where: { userId: userId },
-    create: {
-      userId: userId,
-      accessToken: generatedTokens.accessToken,
-      refreshToken: generatedTokens.refreshToken,
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-    },
-    update: {
-      accessToken: generatedTokens.accessToken,
-      refreshToken: generatedTokens.refreshToken,
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-    },
+  // Redis에 토큰 저장 (14일 유효기간)
+  await redis.set(`access_token:${userId}`, generatedTokens.accessToken, {
+    EX: ACCESS_TOKEN_EXPIRATION_TIME * 60, // 30분
+  });
+  await redis.set(`refresh_token:${userId}`, generatedTokens.refreshToken, {
+    EX: REFRESH_TOKEN_EXPIRATION_TIME * 24 * 60 * 60, // 14일
   });
 
   return generatedTokens;

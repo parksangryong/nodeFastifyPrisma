@@ -11,6 +11,14 @@ export const getUsersSchema = {
         users: { type: "array" },
       },
     },
+    401: {
+      type: "object",
+      description: "유저 조회 실패 시 오류 메시지를 반환합니다.",
+      properties: {
+        message: { type: "string" },
+        code: { type: "string" },
+      },
+    },
   },
 };
 

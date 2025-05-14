@@ -50,6 +50,7 @@ export default async function authRoutes(server: FastifyInstance) {
     schema: logoutSchema,
     handler: async (request, reply) => {
       const authHeader = request.headers.authorization;
+      console.log("######authHeader:", authHeader);
 
       // Bearer 토큰 형식 검증
       if (!authHeader || !authHeader.startsWith("Bearer ")) {
