@@ -4,9 +4,7 @@ import {
   getAccessToken,
   verifyRefreshToken,
 } from "../utils/jwt.js";
-
-// prisma
-import { prisma } from "../lib/prisma.js";
+import { redis } from "../lib/redis.js";
 
 // constants
 import { Errors } from "../constants/error.js";
@@ -27,42 +25,21 @@ export const authenticateToken = async (
   }
 
   const accessToken = getAccessToken(authHeader);
-
   const decoded = verifyAccessToken(accessToken) as JwtPayload;
 
-  const getTokenData = await prisma.tokens.findFirst({
-    where: {
-      accessToken: accessToken,
-    },
-    select: {
-      refreshToken: true,
-    },
-  });
-
-  if (!getTokenData) {
-    throw new Error(Errors.JWT.INVALID_ACCESS_TOKEN.code);
-  }
-
-  const refreshDecoded = verifyRefreshToken(getTokenData?.refreshToken);
-
-  console.log("ACCESS_TOKEN_SECRET:", decoded);
-  console.log("REFRESH_TOKEN_DECODED:", refreshDecoded);
-
-  if (!decoded && !refreshDecoded) {
-    throw new Error(Errors.JWT.INVALID_ACCESS_TOKEN.code);
-  }
-
-  if (!decoded && refreshDecoded) {
+  if (!decoded) {
     throw new Error(Errors.JWT.ACCESS_EXPIRED.code);
   }
 
-  try {
-    await prisma.tokens.findUnique({
-      where: {
-        userId: decoded.userId,
-      },
-    });
-  } catch (error) {
-    throw new Error(Errors.JWT.DB_ERROR.code);
+  const refreshToken = await redis.get(`refresh_token:${decoded.userId}`);
+
+  if (!refreshToken) {
+    throw new Error(Errors.JWT.INVALID_REFRESH_TOKEN.code);
+  }
+
+  const decoded_refreshToken = verifyRefreshToken(refreshToken);
+
+  if (!decoded_refreshToken) {
+    throw new Error(Errors.JWT.REFRESH_EXPIRED.code);
   }
 };

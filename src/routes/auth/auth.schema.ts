@@ -19,7 +19,7 @@ export const loginSchema = {
         refreshToken: { type: "string" },
       },
     },
-    400: {
+    401: {
       type: "object",
       description: "로그인 실패 시 오류 메시지를 반환합니다.",
       properties: {

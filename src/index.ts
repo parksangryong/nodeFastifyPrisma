@@ -22,6 +22,7 @@ import { prisma } from "./lib/prisma";
 
 // Plugins
 import swagger from "./plugins/swagger";
+import redis from "./plugins/redis";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -34,6 +35,7 @@ errorHandler(app);
 
 // 미들웨어 등록
 app.register(swagger); //스웨거 미들웨어
+app.register(redis);
 app.register(multipart, {
   limits: {
     fileSize: 20 * 1024 * 1024, // 20MB
