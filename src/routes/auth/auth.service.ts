@@ -1,5 +1,5 @@
 // utils
-import { generateTokens } from "../../utils/jwt";
+import { generateTokens, verifyRefreshToken } from "../../utils/jwt";
 import { jwtDecode } from "jwt-decode";
 
 // constants
@@ -18,6 +18,7 @@ import {
   hashPassword,
   comparePassword,
 } from "../../utils/auth.util";
+import { ACCESS_TOKEN_EXPIRATION_TIME } from "../../constants/common";
 
 export const register = async (body: RegisterBody): Promise<TokenResponse> => {
   const existingUser = await prisma.users.findUnique({
@@ -79,32 +80,30 @@ export const logout = async (
 export const refreshTokens = async (
   refreshToken: string
 ): Promise<TokenResponse> => {
-  const decoded = jwtDecode(refreshToken);
-  const { userId, name, exp } = decoded as {
+  const decoded = verifyRefreshToken(refreshToken) as {
     userId: number;
     name: string;
     exp: number;
   };
 
-  if (!userId || !name) {
+  if (!decoded) {
     throw new Error(Errors.JWT.INVALID_REFRESH_TOKEN.code);
   }
 
-  if (exp * 1000 < Date.now()) {
-    throw new Error(Errors.JWT.REFRESH_EXPIRED.code);
-  }
-
   // Redis에서 저장된 리프레시 토큰 확인
-  const storedRefreshToken = await redis.get(`refresh_token:${userId}`);
+  const storedRefreshToken = await redis.get(`refresh_token:${decoded.userId}`);
   if (!storedRefreshToken || storedRefreshToken !== refreshToken) {
     throw new Error(Errors.JWT.INVALID_REFRESH_TOKEN.code);
   }
 
-  const newAccessToken = generateTokens(name, userId).accessToken;
+  const newAccessToken = generateTokens(
+    decoded.name,
+    decoded.userId
+  ).accessToken;
 
   // Redis에 새로운 액세스 토큰 저장
-  await redis.set(`access_token:${userId}`, newAccessToken, {
-    EX: 1800, // 30분
+  await redis.set(`access_token:${decoded.userId}`, newAccessToken, {
+    EX: ACCESS_TOKEN_EXPIRATION_TIME * 60, // 30분
   });
 
   return {

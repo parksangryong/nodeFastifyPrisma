@@ -4,8 +4,6 @@ import {
   getAccessToken,
   verifyRefreshToken,
 } from "../utils/jwt.js";
-
-// redis
 import { redis } from "../lib/redis.js";
 
 // constants
@@ -31,5 +29,17 @@ export const authenticateToken = async (
 
   if (!decoded) {
     throw new Error(Errors.JWT.ACCESS_EXPIRED.code);
+  }
+
+  const refreshToken = await redis.get(`refresh_token:${decoded.userId}`);
+
+  if (!refreshToken) {
+    throw new Error(Errors.JWT.INVALID_REFRESH_TOKEN.code);
+  }
+
+  const decoded_refreshToken = verifyRefreshToken(refreshToken);
+
+  if (!decoded_refreshToken) {
+    throw new Error(Errors.JWT.REFRESH_EXPIRED.code);
   }
 };
